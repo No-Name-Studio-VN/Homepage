@@ -181,9 +181,7 @@ export default defineNuxtConfig({
     },
   },
 
-  sourcemap: {
-    client: 'hidden',
-  },
+  sourcemap: false,
 
   compatibilityDate: '2026-01-30',
 
