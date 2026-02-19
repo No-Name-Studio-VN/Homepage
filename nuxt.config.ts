@@ -1,13 +1,17 @@
-import pwaConfig from './pwa.config'
 import { APP_MANIFEST, SEO_CONFIG } from './app/constants/manifest'
 import { CACHE_TTL } from './shared/commonEnums'
 import { routeRules } from './shared/apiRoutes'
+import { defaultLocale, browserFallbackLocale, lanugageNames, locales } from './i18n-constants'
 
 export default defineNuxtConfig({
   modules: [
+    'nuxt-security',
     'shadcn-nuxt',
     '@vueuse/nuxt',
+    '@nuxtjs/seo',
+    'nuxt-studio',
     '@nuxt/content',
+    'nuxt-content-git', // this adds createdAt and updatedAt dates based on the git history.
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/image',
@@ -18,12 +22,9 @@ export default defineNuxtConfig({
     '@nuxthub/core',
     'nuxt-auth-utils',
     '@nuxtjs/color-mode',
-    'nuxt-security',
-    '@nuxtjs/robots',
-    '@nuxtjs/sitemap',
-    'nuxt-schema-org',
-    'nuxt-seo-utils',
     '@nuxtjs/turnstile',
+    '@sentry/nuxt/module',
+    '@nuxtjs/i18n',
   ],
 
   $development: {
@@ -72,8 +73,11 @@ export default defineNuxtConfig({
         nodeCompat: true,
       },
       prerender: {
-        crawlLinks: false, // set this to false so we do not bundle everything
-        ignore: ['/admin', '/pwa', '/__og-image__/static/pwa'],
+        // Pre-render the homepage
+        routes: ['/', '/rss.xml'],
+        // Then crawl all the links on the page
+        crawlLinks: true,
+        ignore: ['/admin', '/settings', '/pwa', '/__og-image__/static/pwa'],
       },
       publicAssets: [
         {
@@ -88,8 +92,6 @@ export default defineNuxtConfig({
         },
       ],
     },
-
-    pwa: pwaConfig,
     security: {
       rateLimiter: false,
       strict: true,
@@ -109,10 +111,10 @@ export default defineNuxtConfig({
             '\'nonce-{{nonce}}\'',
             '\'unsafe-eval\'',
           ],
-          'style-src': ['\'self\'', 'https:', '\'unsafe-inline\''],
-          'img-src': ['\'self\'', 'data:', 'https://*.gstatic.com'],
+          'style-src': ['\'self\'', 'https:', '\'unsafe-inline\'', 'https://challenges.cloudflare.com'],
+          'img-src': ['\'self\'', 'data:', 'https://*.gstatic.com', 'https://images.unsplash.com'],
           'media-src': ['\'self\'', 'blob:'],
-          'connect-src': ['\'self\''],
+          'connect-src': ['\'self\'', 'https://translate-pa.googleapis.com', 'https://*.svc.ms', 'https://*.sentry.io', 'https://challenges.cloudflare.com', 'https://api.iconify.design', 'https://api.simplesvg.com', 'https://api.simplesvg.com', 'https://api.unisvg.com'],
           'font-src': ['\'self\'', 'https://*.gstatic.com'],
           'worker-src': ['\'self\'', 'blob:'],
           'frame-src': ['\'self\'', 'https://www.youtube.com', 'https://challenges.cloudflare.com'],
@@ -131,7 +133,7 @@ export default defineNuxtConfig({
   ],
 
   site: {
-    url: 'nnsvn.me',
+    url: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     name: APP_MANIFEST.name,
   },
 
@@ -157,6 +159,7 @@ export default defineNuxtConfig({
       sentry: {
         dsn: '',
       },
+      url: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
     },
     turnstile: {
       secretKey: '',
@@ -170,9 +173,11 @@ export default defineNuxtConfig({
   routeRules: {
     '/admin/**': {
       ssr: false,
+      prerender: false,
     },
     '/settings/**': {
       ssr: false,
+      prerender: false,
     },
   },
 
@@ -197,15 +202,11 @@ export default defineNuxtConfig({
     // D1 database
     db: 'sqlite',
     // KV namespace (binding defaults to 'KV')
-    kv: true,
+    kv: false,
     // Cache KV namespace (binding defaults to 'CACHE')
-    cache: true,
+    cache: false,
     // R2 bucket (binding defaults to 'BLOB')
     blob: false,
-  },
-
-  auth: {
-    webAuthn: true,
   },
 
   eslint: {
@@ -221,12 +222,32 @@ export default defineNuxtConfig({
   fonts: {
     families: [
       {
-        name: 'Manrope',
+        name: 'DM Sans',
+        preload: true,
+        provider: 'google',
+        global: true,
+      },
+      {
+        name: 'Inter',
         preload: true,
         provider: 'google',
         global: true,
       },
     ],
+  },
+
+  i18n: {
+    vueI18n: './i18n.config.ts',
+    strategy: 'prefix_and_default',
+    defaultLocale,
+    detectBrowserLanguage: {
+      fallbackLocale: browserFallbackLocale,
+    },
+    locales: locales.map(locale => ({
+      name: lanugageNames[locale],
+      code: locale,
+      file: `${locale}.json`,
+    })),
   },
 
   schemaOrg: {
@@ -236,7 +257,7 @@ export default defineNuxtConfig({
   sentry: {
     sourceMapsUploadOptions: {
       org: 'no-name-studio',
-      project: 'gromet-reader',
+      project: 'homepage',
       authToken: process.env.SENTRY_AUTH_TOKEN,
     },
     silent: true,
@@ -273,6 +294,17 @@ export default defineNuxtConfig({
 
   sitemap: {
     zeroRuntime: true,
+    exclude: ['/admin/**', '/settings/**'],
+  },
+
+  studio: {
+    route: '/admin/studio',
+    repository: {
+      provider: 'github',
+      owner: 'No-Name-Studio-VN',
+      repo: 'Homepage',
+      branch: 'main',
+    },
   },
 
   turnstile: {

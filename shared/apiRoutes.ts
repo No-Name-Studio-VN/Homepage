@@ -2,7 +2,6 @@ import type { NuxtSecurityRouteRules } from 'nuxt-security'
 
 export const apiRoutes = {
   AUTH_LOGIN: '/auth/login',
-  AUTH_REGISTER: '/auth/register',
 
   MY_PROFILE: '/api/users/me',
 }

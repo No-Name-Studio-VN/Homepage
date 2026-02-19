@@ -1,118 +1,250 @@
 <template>
-  <div>
-    <header
-      class="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ease-out"
-      :class="isScrolled ? 'h-12' : 'h-16'"
-    >
-      <div class="container mx-auto flex h-full items-center justify-between px-4">
-        <!-- Logo -->
-        <NuxtLink
-          to="/"
-          class="flex items-center gap-2 group transition-transform duration-300"
-          :class="isScrolled ? 'scale-90' : 'scale-100'"
-        >
-          <NuxtImg
-            src="/favicon.svg"
-            alt="Logo"
-            class="h-8 w-8 transition-all duration-300"
-            :class="isScrolled ? 'h-6 w-6' : 'h-8 w-8'"
-          />
-          <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            {{ APP_MANIFEST.name }}
-          </span>
-        </NuxtLink>
-
-        <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center gap-1">
-          <Button
-            v-for="item in navItems"
-            :key="item.sectionId"
-            variant="ghost"
-            class="cursor-pointer"
-            @click="scrollToSection(item.sectionId)"
+  <div class="min-h-screen bg-background text-foreground">
+    <!-- Floating Island Header -->
+    <div class="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4 transition-all duration-500 ease-out">
+      <header
+        class="w-full max-w-5xl transition-all duration-500 ease-out"
+        :class="cn(
+          'rounded-full border px-8 transition-all',
+          isScrolled
+            ? 'border-border bg-background/40 shadow-lg backdrop-blur-xs shadow-black/8 py-3'
+            : 'border-border/20 bg-background/60 py-4 backdrop-blur-xs',
+        )"
+      >
+        <div class="flex h-full items-center justify-between">
+          <!-- Logo -->
+          <NuxtLink
+            to="/"
+            class="flex items-center gap-2.5 group transition-all duration-300"
+            :class="isScrolled ? 'scale-[0.97]' : 'scale-100'"
           >
-            {{ item.label }}
-          </Button>
-        </nav>
+            <NuxtImg
+              src="/favicon.svg"
+              alt="No Name Studio"
+              class="h-6 w-6 transition-all duration-300"
+            />
+            <span class="text-md font-semibold tracking-tight text-primary hover:text-foreground">
+              No Name Studio
+            </span>
+          </NuxtLink>
 
-        <!-- Mobile Menu Trigger -->
-        <Sheet v-model:open="isSheetOpen">
-          <SheetTrigger as-child>
+          <!-- Desktop Navigation -->
+          <nav class="hidden md:flex items-center gap-0.5">
+            <Button
+              v-for="item in data?.nav?.items"
+              :key="item.sectionId"
+              variant="ghost"
+              size="sm"
+              class="text-sm font-medium text-primary hover:text-foreground hover:bg-transparent cursor-pointer transition-colors duration-200"
+              @click="navigateTo(`/${locale}#${item.sectionId}`)"
+            >
+              {{ item.label }}
+            </Button>
+
+            <Separator
+              orientation="vertical"
+              class="mx-3 h-4 bg-border/60"
+            />
+
+            <!-- Language Switcher Dropdown -->
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="text-sm font-medium cursor-pointer gap-1.5 text-primary hover:text-foreground hover:bg-transparent"
+                >
+                  <Globe class="h-3.5 w-3.5" />
+                  {{ currentLocaleLabel }}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                class="min-w-35"
+              >
+                <DropdownMenuItem
+                  v-for="loc in globalLocales"
+                  :key="loc.code"
+                  class="cursor-pointer"
+                  :class="locale === loc.code && 'bg-accent text-accent-foreground'"
+                  @click="setLocale(loc.code)"
+                >
+                  {{ loc.name }}
+                  <span
+                    v-if="locale === loc.code"
+                    class="ml-auto text-xs text-primary"
+                  >✓</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <!-- Theme Switcher -->
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="cursor-pointer text-primary hover:text-foreground hover:bg-transparent h-8 w-8"
+                >
+                  <Sun class="h-3.5 w-3.5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon class="absolute h-3.5 w-3.5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span class="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+              >
+                <ThemeSwitcher />
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+
+          <!-- Mobile Controls -->
+          <div class="flex items-center gap-0.5 md:hidden">
+            <!-- Language Switcher Dropdown (mobile) -->
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="cursor-pointer h-8 w-8 text-primary hover:text-foreground hover:bg-transparent"
+                >
+                  <Globe class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+              >
+                <DropdownMenuItem
+                  v-for="loc in globalLocales"
+                  :key="loc.code"
+                  class="cursor-pointer"
+                  :class="locale === loc.code && 'bg-accent text-accent-foreground'"
+                  @click="setLocale(loc.code)"
+                >
+                  {{ loc.name }}
+                  <span
+                    v-if="locale === loc.code"
+                    class="ml-auto text-xs text-primary"
+                  >✓</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <!-- Theme Switcher (mobile) -->
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="cursor-pointer h-8 w-8 text-primary hover:text-foreground hover:bg-transparent"
+                >
+                  <Sun class="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span class="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+              >
+                <ThemeSwitcher />
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <!-- Mobile Menu Toggle -->
             <Button
               variant="ghost"
               size="icon"
-              class="md:hidden relative"
-              aria-label="Open menu"
+              aria-label="Toggle menu"
+              class="h-8 w-8 text-primary hover:text-foreground hover:bg-transparent"
+              @click="isMobileMenuOpen = !isMobileMenuOpen"
             >
+              <X
+                v-if="isMobileMenuOpen"
+                class="h-5 w-5"
+              />
               <Menu
-                class="h-5 w-5 transition-transform duration-300"
-                :class="{ 'rotate-90 opacity-0': isSheetOpen, 'rotate-0 opacity-100': !isSheetOpen }"
+                v-else
+                class="h-5 w-5"
               />
             </Button>
-          </SheetTrigger>
+          </div>
+        </div>
+      </header>
+    </div>
 
-          <!-- Mobile Navigation Sheet -->
-          <SheetContent
-            side="right"
-            class="w-full max-w-xs sm:max-w-sm"
+    <!-- Full-Page Mobile Menu -->
+    <Transition
+      enter-active-class="transition-all duration-500 ease-out"
+      enter-from-class="opacity-0 -translate-y-full"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-400 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-full"
+    >
+      <div
+        v-if="isMobileMenuOpen"
+        class="fixed inset-0 z-40 bg-background/95 backdrop-blur-md md:hidden"
+      >
+        <nav class="flex h-full flex-col justify-start gap-2 px-8 pt-32">
+          <TransitionGroup
+            enter-active-class="transition-all duration-500 ease-out"
+            enter-from-class="opacity-0 translate-y-4"
+            enter-to-class="opacity-100 translate-y-0"
+            appear
           >
-            <SheetHeader class="text-left">
-              <SheetTitle class="flex items-center gap-2">
-                <NuxtImg
-                  src="/favicon.svg"
-                  alt="Logo"
-                  class="h-8 w-8 transition-all duration-300"
-                  :class="isScrolled ? 'h-6 w-6' : 'h-8 w-8'"
+            <a
+              v-for="(item, index) in data?.nav?.items"
+              :key="item.sectionId"
+              :href="`/${locale}#${item.sectionId}`"
+              class="group relative w-full cursor-pointer py-2 touch-manipulation"
+              :style="{ transitionDelay: `${index * 60}ms` }"
+              @click.prevent="handleMobileNavClick(item.sectionId)"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-3xl font-semibold tracking-tight text-foreground transition-all duration-300 group-hover:text-primary group-active:scale-95">
+                  {{ item.label }}
+                </span>
+                <ChevronRight
+                  class="h-7 w-7 shrink-0 text-primary opacity-0 translate-x-3 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-x-0"
                 />
-                <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">{{ APP_MANIFEST.name }}</span>
-              </SheetTitle>
-            </SheetHeader>
-            <nav class="flex flex-col gap-2 p-4 pt-0">
-              <a
-                v-for="item in navItems"
-                :key="item.sectionId"
-                :href="`#${item.sectionId}`"
-                class="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground active:scale-[0.98]"
-                @click.prevent="handleMobileNavClick(item.sectionId)"
-              >
-                <component
-                  :is="item.icon"
-                  class="h-5 w-5"
-                />
-                {{ item.label }}
-              </a>
-            </nav>
-          </SheetContent>
-        </Sheet>
+              </div>
+              <!-- Expanding underline -->
+              <span class="absolute bottom-2 left-0 h-0.5 w-0 bg-primary transition-all duration-400 ease-out group-hover:w-3/4" />
+            </a>
+          </TransitionGroup>
+        </nav>
       </div>
-    </header>
+    </Transition>
 
-    <main class="flex flex-1 flex-col">
-      <div class="mx-auto h-full w-full max-w-[1400px] min-[1800px]:max-w-[1536px] min-h-[90vh]">
-        <slot />
-      </div>
+    <!-- Main Content -->
+    <main>
+      <slot />
     </main>
 
-    <footer class="border-t border-border bg-muted/30">
-      <div class="container mx-auto px-4 py-8">
-        <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <p class="text-sm text-muted-foreground">
-            © {{ new Date().getFullYear() }} {{ SEO_CONFIG.author }}. All rights reserved.
-          </p>
+    <footer class="border-t border-border/40 bg-background">
+      <div class="mx-auto max-w-5xl px-6 py-14 lg:px-8">
+        <div class="flex flex-col items-center gap-5 text-center">
           <div class="flex items-center gap-6">
             <NuxtLink
-              to="/privacy"
-              class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              to="/docs/privacy"
+              class="text-xs text-muted-foreground/70 transition-colors hover:text-foreground"
             >
-              Privacy
+              {{ $t('common.privacy') }}
             </NuxtLink>
+            <span class="h-3 w-px bg-border/60" />
             <NuxtLink
-              to="/terms"
-              class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              to="/docs/terms"
+              class="text-xs text-muted-foreground/70 transition-colors hover:text-foreground"
             >
-              Terms
+              {{ $t('common.terms') }}
             </NuxtLink>
           </div>
+
+          <!-- Copyright -->
+          <p class="text-[11px] text-muted-foreground/50">
+            {{ new Date().getFullYear() }} © No Name Studio - All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
@@ -120,87 +252,60 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useWindowScroll } from '@vueuse/core'
-import { APP_MANIFEST, SEO_CONFIG } from '@/constants/manifest'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import { Home, Search, Users, Phone, Layers, Menu } from 'lucide-vue-next'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Globe, Menu, Sun, Moon, X, ChevronRight } from 'lucide-vue-next'
+import { cn } from '@/lib/utils'
+import { lanugageNames, locales } from '../../i18n-constants'
 
-const router = useRouter()
-const isSheetOpen = ref(false)
+const { locale, setLocale } = useI18n()
+const { data } = await useLandingContent()
 
-// Scroll detection for shrinking header effect
+const globalLocales = locales.map(locale => ({
+  name: lanugageNames[locale],
+  code: locale,
+}))
+
+const currentLocaleLabel = computed(() => {
+  return globalLocales.find(l => l.code === locale.value)?.name ?? locale.value
+})
+
+const isMobileMenuOpen = ref(false)
+
 const { y: scrollY } = useWindowScroll()
-const isScrolled = computed(() => scrollY.value > 50)
+const isScrolled = computed(() => scrollY.value > 300)
 
-// Navigation items with lucide icons and section IDs
-const navItems = [
-  {
-    label: 'Trang chủ',
-    sectionId: 'home',
-    icon: Home,
-  },
-  {
-    label: 'Tìm kiếm',
-    sectionId: 'search',
-    icon: Search,
-  },
-  {
-    label: 'Về chúng tôi',
-    sectionId: 'about',
-    icon: Users,
-  },
-  {
-    label: 'Liên hệ',
-    sectionId: 'contact',
-    icon: Phone,
-  },
-]
+// Close mobile menu on escape key
+onMounted(() => {
+  const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && isMobileMenuOpen.value) {
+      isMobileMenuOpen.value = false
+    }
+  }
+  window.addEventListener('keydown', handleEscape)
+  onUnmounted(() => window.removeEventListener('keydown', handleEscape))
+})
 
-// Function to scroll to section with smooth animation
-const scrollToSection = (sectionId: string) => {
-  // If we're not on the homepage, navigate there first
-  if (router.currentRoute.value.path !== '/') {
-    router.push('/').then(() => {
-      // Wait for navigation to complete, then scroll
-      setTimeout(() => {
-        scrollToElement(sectionId)
-      }, 100)
-    })
+// Prevent body scroll when mobile menu is open
+watch(isMobileMenuOpen, (isOpen) => {
+  if (isOpen) {
+    document.body.style.overflow = 'hidden'
   }
   else {
-    scrollToElement(sectionId)
+    document.body.style.overflow = ''
   }
-}
+})
 
-const scrollToElement = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerOffset = 80 // Account for fixed header height
-    const elementPosition = element.getBoundingClientRect().top
-    const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: 'smooth',
-    })
-  }
-}
-
-// Handle mobile nav click - close sheet and scroll
-const handleMobileNavClick = (sectionId: string) => {
-  isSheetOpen.value = false
-  // Small delay to allow sheet to close
-  setTimeout(() => {
-    scrollToSection(sectionId)
-  }, 300)
+function handleMobileNavClick(sectionId: string) {
+  isMobileMenuOpen.value = false
+  navigateTo(`/${locale}#${sectionId}`)
 }
 </script>

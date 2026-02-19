@@ -128,6 +128,7 @@ definePageMeta({
   title: 'Admin Dashboard',
   breadcrumb: 'Admin',
   middleware: ['auth', 'admin'],
+  layout: 'dashboard',
 })
 
 interface ManagementCard {

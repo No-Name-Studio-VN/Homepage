@@ -1,25 +1,17 @@
 import type { ManifestOptions } from 'vite-plugin-pwa'
 
 export const APP_MANIFEST: Partial<ManifestOptions> = {
-  name: 'Nuxt Starter Kit',
-  short_name: 'Nuxt Template',
-  description: 'A Nuxt 3 starter template with NuxtHub, Auth, and PWA support',
-  start_url: '/pwa',
+  name: 'No Name Studio',
+  short_name: 'No Name Studio',
+  description: 'The homepage of No Name Studio, a creative agency specializing in web development and design.',
+  start_url: '/',
   display: 'standalone',
   background_color: '#ffffff',
   theme_color: '#8b5cf6',
   orientation: 'any',
   scope: '/',
   lang: 'en',
-  categories: ['education', 'productivity'],
-  shortcuts: [
-    {
-      name: 'Dashboard',
-      short_name: 'Dashboard',
-      description: 'Sample shortcut to dashboard',
-      url: '/dashboard',
-    },
-  ],
+  categories: ['education', 'productivity', 'technology', 'business'],
   icons: [
     {
       src: 'pwa-64x64.png',
@@ -49,7 +41,7 @@ export const APP_MANIFEST: Partial<ManifestOptions> = {
 // SEO-related constants
 export const SEO_CONFIG = {
   author: 'No Name Studio',
-  keywords: 'nuxt, template, pwa, starter, vue, javascript',
+  keywords: 'landingpage, freelance, tech, cheap, affordable, design, development, web, mobile, app, software, solutions',
   ogImage: '/pwa-512x512.png',
   twitterCard: 'summary_large_image' as const,
   robots: 'index, follow',

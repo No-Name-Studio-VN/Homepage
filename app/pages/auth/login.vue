@@ -4,10 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, User, Lock, Eye, EyeOff, Fingerprint } from 'lucide-vue-next'
+import { Loader2, User, Lock, Eye, EyeOff } from 'lucide-vue-next'
 import { getAuthErrorMessage } from '#shared/constants/authMessages'
 
-const { authenticate } = useWebAuthn()
 const route = useRoute()
 const username = ref('')
 const password = ref('')
@@ -25,29 +24,6 @@ onMounted(() => {
     error.value = getAuthErrorMessage(errorCode) || 'An error occurred during login'
   }
 })
-
-async function signInWithPasskey() {
-  if (!username.value.trim()) {
-    error.value = 'Username is required'
-    return
-  }
-
-  isLoading.value = true
-  error.value = ''
-
-  try {
-    await authenticate(username.value)
-    window.location.href = redirectTo.value
-  }
-  catch (err) {
-    createError({
-      statusCode: 401,
-      statusMessage: 'Authentication failed. Please ensure your passkey is set up correctly.',
-      data: err,
-    })
-    isLoading.value = false
-  }
-}
 
 definePageMeta({
   layout: 'empty',
@@ -179,24 +155,6 @@ definePageMeta({
                 <span class="bg-card/60 px-2 text-gray-500 dark:text-gray-400 rounded-xl">Or</span>
               </div>
             </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              class="w-full h-11"
-              :disabled="isLoading || !username.trim()"
-              @click="signInWithPasskey"
-            >
-              <Loader2
-                v-if="isLoading"
-                class="mr-2 h-4 w-4 animate-spin"
-              />
-              <Fingerprint
-                v-else
-                class="mr-2 h-4 w-4"
-              />
-              Sign In with a Passkey
-            </Button>
           </div>
         </form>
 
@@ -204,28 +162,18 @@ definePageMeta({
           <div class="text-xs text-gray-500 dark:text-gray-400">
             By signing in, you agree to our
             <NuxtLink
-              to="https://nnsvn.me/terms"
+              to="/terms"
               class="underline"
               target="_blank"
               rel="noopener noreferrer"
             >Terms of Service</NuxtLink>
             and
             <NuxtLink
-              to="https://nnsvn.me/privacy"
+              to="/privacy"
               class="underline"
               target="_blank"
               rel="noopener noreferrer"
             >Privacy Policy</NuxtLink>
-          </div>
-
-          <div class="text-sm text-gray-600 dark:text-gray-300">
-            Don't have an account?
-            <nuxt-link
-              to="/auth/register"
-              class="text-primary hover:underline font-medium"
-            >
-              Sign Up
-            </nuxt-link>
           </div>
         </div>
       </CardContent>

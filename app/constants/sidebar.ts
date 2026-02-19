@@ -1,7 +1,6 @@
 import type { SidebarItem } from '~~/types/common'
 import {
   Home,
-  UserCog2Icon,
 } from 'lucide-vue-next'
 
 export const SIDEBAR_LINKS: { navMain: SidebarItem[], navSecondary: SidebarItem[] } = {
@@ -12,11 +11,5 @@ export const SIDEBAR_LINKS: { navMain: SidebarItem[], navSecondary: SidebarItem[
       icon: Home,
     },
   ],
-  navSecondary: [
-    {
-      title: 'Support',
-      url: '/support',
-      icon: UserCog2Icon,
-    },
-  ],
+  navSecondary: [],
 }
