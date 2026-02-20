@@ -72,13 +72,13 @@ export default defineNuxtConfig({
       cloudflare: {
         nodeCompat: true,
       },
-      prerender: {
-        // Pre-render the homepage
-        routes: ['/', '/rss.xml'],
-        // Then crawl all the links on the page
-        crawlLinks: true,
-        ignore: ['/admin', '/settings', '/pwa', '/__og-image__/static/pwa'],
-      },
+      // prerender: {
+      //   // Pre-render the homepage
+      //   routes: ['/', '/rss.xml'],
+      //   // Then crawl all the links on the page
+      //   crawlLinks: true,
+      //   ignore: ['/admin', '/settings', '/pwa', '/__og-image__/static/pwa'],
+      // },
       publicAssets: [
         {
           baseURL: 'content',
