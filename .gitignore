@@ -38,3 +38,4 @@ db.sqlite-*
 actions-runner
 public/content
 /.VSCodeCounter
+wrangler.jsonc
